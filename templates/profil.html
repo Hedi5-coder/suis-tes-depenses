@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="avatar-container mb-3">
+                        {% if current_user.avatar_url %}
+                            <img src="{{ current_user.avatar_url }}" alt="Avatar" class="rounded-circle avatar-img">
+                        {% else %}
+                            <div class="default-avatar rounded-circle">
+                                {{ current_user.username[0]|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h3 class="card-title mb-3">{{ current_user.username }}</h3>
+                    <button class="btn btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <i class="fas fa-edit"></i> Modifier le profil
+                    </button>
+                    <form method="POST" action="{{ url_for('profil') }}" class="mt-4">
+                        <div class="mb-3">
+                            <label for="devise" class="form-label">Devise</label>
+                            <select class="form-select" id="devise" name="devise">
+                                {% for code, nom in devises.items() %}
+                                    <option value="{{ code }}" {% if current_user.devise == code %}selected{% endif %}>{{ nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="budget_mensuel" class="form-label">Budget mensuel</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" min="0" 
+                                       class="form-control" 
+                                       id="budget_mensuel" 
+                                       name="budget_mensuel"
+                                       value="{{ '%.2f'|format(current_user.budget_mensuel) if current_user.budget_mensuel else '' }}"
+                                       placeholder="Entrez votre budget mensuel">
+                                <span class="input-group-text">{{ current_user.devise }}</span>
+                            </div>
+                            <div class="form-text">Définissez votre budget mensuel pour suivre vos dépenses</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Activité récente</h3>
+                    <div class="timeline">
+                        {% for activite in activites %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h5 class="timeline-title">{{ activite.type }}</h5>
+                                <p class="timeline-text">{{ activite.description }}</p>
+                                <small class="text-muted">{{ activite.date|format_date }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour éditer le profil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier le profil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('update_profile') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <h3>Choisissez votre style d'avatar</h3>
+                        <div class="avatar-grid">
+                            {% set colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD', '#D4A5A5', '#9B59B6', '#3498DB'] %}
+                            {% set styles = ['Classique', 'Moderne', 'Élégant', 'Nature', 'Solaire', 'Pastel', 'Royal', 'Ocean'] %}
+                            {% for i in range(8) %}
+                            <div class="avatar-choice">
+                                <input type="radio" name="avatar_choice" id="avatar{{ i }}" value="{{ i }}" {% if current_user.avatar_style == i %}checked{% endif %}>
+                                <label for="avatar{{ i }}">
+                                    <div class="styled-avatar" style="background-color: {{ colors[i] }};">
+                                        {{ current_user.username[0]|upper }}
+                                    </div>
+                                    <div class="avatar-name">{{ styles[i] }}</div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-container {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.default-avatar {
+    width: 100%;
+    height: 100%;
+    background-color: #007bff;
+    color: white;
+    font-size: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 40px;
+    margin-bottom: 30px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: #007bff;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 3px #007bff;
+}
+
+.timeline-content {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.timeline-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #007bff;
+}
+
+.timeline-text {
+    margin: 10px 0 5px;
+}
+
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.avatar-choice {
+    position: relative;
+    cursor: pointer;
+}
+
+.avatar-choice input[type="radio"] {
+    display: none;
+}
+
+.avatar-choice label {
+    display: block;
+    cursor: pointer;
+}
+
+.styled-avatar {
+    width: 60px;
+    height: 60px;
+    border: 3px solid transparent;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.avatar-choice input[type="radio"]:checked + label .styled-avatar {
+    border-color: #007bff;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0,123,255,0.5);
+}
+
+.avatar-choice:hover .styled-avatar {
+    transform: scale(1.05);
+}
+
+.avatar-name {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 5px;
+    color: #666;
+}
+</style>
+{% endblock %}

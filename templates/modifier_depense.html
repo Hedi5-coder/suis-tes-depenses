@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center">Modifier la dépense</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="montant" class="form-label">Montant (FCFA)</label>
+                        <input type="number" step="0.01" class="form-control" id="montant" name="montant" value="{{ depense.montant }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="categorie" class="form-label">Catégorie</label>
+                        <select class="form-select" id="categorie" name="categorie" required>
+                            <option value="">Choisir une catégorie</option>
+                            <option value="Alimentation" {% if depense.categorie == 'Alimentation' %}selected{% endif %}>Alimentation</option>
+                            <option value="Transport" {% if depense.categorie == 'Transport' %}selected{% endif %}>Transport</option>
+                            <option value="Logement" {% if depense.categorie == 'Logement' %}selected{% endif %}>Logement</option>
+                            <option value="Loisirs" {% if depense.categorie == 'Loisirs' %}selected{% endif %}>Loisirs</option>
+                            <option value="Santé" {% if depense.categorie == 'Santé' %}selected{% endif %}>Santé</option>
+                            <option value="Shopping" {% if depense.categorie == 'Shopping' %}selected{% endif %}>Shopping</option>
+                            <option value="Factures" {% if depense.categorie == 'Factures' %}selected{% endif %}>Factures</option>
+                            <option value="Autre" {% if depense.categorie == 'Autre' %}selected{% endif %}>Autre</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ depense.description }}</textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,433 @@
+/* Style général */
+body {
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Motifs de fond pour différentes pages */
+body[data-page="index"] {
+    background: 
+        linear-gradient(45deg, rgba(13, 110, 253, 0.1) 25%, transparent 25%) -40px 0,
+        linear-gradient(-45deg, rgba(13, 110, 253, 0.1) 25%, transparent 25%) -40px 0,
+        linear-gradient(45deg, transparent 75%, rgba(13, 110, 253, 0.1) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(13, 110, 253, 0.1) 75%);
+    background-size: 80px 80px;
+    background-color: #f8f9fa;
+}
+
+body[data-page="dashboard"] {
+    background:
+        radial-gradient(circle at 100% 50%, transparent 20%, rgba(13, 110, 253, 0.05) 21%, rgba(13, 110, 253, 0.05) 34%, transparent 35%, transparent),
+        radial-gradient(circle at 0% 50%, transparent 20%, rgba(13, 110, 253, 0.05) 21%, rgba(13, 110, 253, 0.05) 34%, transparent 35%, transparent) 0 -50px;
+    background-color: #f8f9fa;
+    background-size: 75px 100px;
+}
+
+body[data-page="ajouter_depense"] {
+    background-color: #f8f9fa;
+    background-image: 
+        linear-gradient(30deg, rgba(13, 110, 253, 0.1) 12%, transparent 12.5%, transparent 87%, rgba(13, 110, 253, 0.1) 87.5%, rgba(13, 110, 253, 0.1)),
+        linear-gradient(150deg, rgba(13, 110, 253, 0.1) 12%, transparent 12.5%, transparent 87%, rgba(13, 110, 253, 0.1) 87.5%, rgba(13, 110, 253, 0.1)),
+        linear-gradient(30deg, rgba(13, 110, 253, 0.1) 12%, transparent 12.5%, transparent 87%, rgba(13, 110, 253, 0.1) 87.5%, rgba(13, 110, 253, 0.1)),
+        linear-gradient(150deg, rgba(13, 110, 253, 0.1) 12%, transparent 12.5%, transparent 87%, rgba(13, 110, 253, 0.1) 87.5%, rgba(13, 110, 253, 0.1)),
+        linear-gradient(60deg, rgba(13, 110, 253, 0.05) 25%, transparent 25.5%, transparent 75%, rgba(13, 110, 253, 0.05) 75%, rgba(13, 110, 253, 0.05)),
+        linear-gradient(60deg, rgba(13, 110, 253, 0.05) 25%, transparent 25.5%, transparent 75%, rgba(13, 110, 253, 0.05) 75%, rgba(13, 110, 253, 0.05));
+    background-size: 80px 140px;
+    background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+}
+
+body[data-page="login"], body[data-page="register"] {
+    background:
+        linear-gradient(45deg, rgba(13, 110, 253, 0.05) 45px, transparent 45px)64px 64px,
+        linear-gradient(45deg, rgba(13, 110, 253, 0.05) 45px, transparent 45px,transparent 91px, rgba(13, 110, 253, 0.05) 91px),
+        linear-gradient(-45deg, rgba(13, 110, 253, 0.05) 23px, transparent 23px, transparent 68px,rgba(13, 110, 253, 0.05) 68px,rgba(13, 110, 253, 0.05) 113px,transparent 113px,transparent 158px,rgba(13, 110, 253, 0.05) 158px);
+    background-color:#f8f9fa;
+    background-size: 128px 128px;
+}
+
+/* Message de bienvenue */
+.welcome-message {
+    padding: 1rem;
+    text-align: center;
+    animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Style de la barre de navigation */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    background: linear-gradient(135deg, #0d6efd, #0043a8);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.05);
+}
+
+.navbar-brand i {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+/* Style des cartes */
+.card {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.add-expense-form .card {
+    animation: cardAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes cardAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(40px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+}
+
+/* Style des boutons d'action */
+.btn-with-icon i {
+    margin-right: 0.5rem;
+}
+
+.btn-sm i {
+    font-size: 0.875rem;
+}
+
+/* Animations des actions */
+.btn-outline-primary:hover i,
+.btn-outline-danger:hover i {
+    animation: spin 0.5s ease;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0,0,0,.125);
+}
+
+/* Style des boutons */
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    padding: 0.5rem 1.5rem;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Style des tableaux */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    border-top: none;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table tbody tr {
+    transition: background-color 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Style des icônes dans le tableau */
+.table td i.fas {
+    margin-right: 0.5rem;
+    color: #6c757d;
+}
+
+/* Animations des boutons d'action */
+.btn i.fas {
+    transition: transform 0.3s ease;
+}
+
+/* Animation spéciale pour le bouton Ajouter */
+.btn-success i.fa-plus-circle {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.btn:hover i.fas {
+    transform: scale(1.2);
+}
+
+.btn-danger:hover i.fas {
+    animation: shake 0.5s ease;
+}
+
+.btn-primary:hover i.fas {
+    animation: spin 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Style des formulaires */
+.form-control, .form-select {
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid transparent;
+    position: relative;
+    z-index: 1;
+}
+
+.form-control:hover, .form-select:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-label {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #0d6efd;
+    transition: all 0.3s ease;
+}
+
+.form-label::before {
+    content: '•';
+    position: absolute;
+    left: -15px;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+}
+
+.form-control:focus ~ .form-label::before,
+.form-select:focus ~ .form-label::before {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    transform: translateY(-2px);
+}
+
+/* Animations pour le formulaire d'ajout de dépenses */
+.add-expense-form .form-group {
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slideIn 0.5s ease forwards;
+}
+
+.add-expense-form .form-group:nth-child(1) { animation-delay: 0.1s; }
+.add-expense-form .form-group:nth-child(2) { animation-delay: 0.2s; }
+.add-expense-form .form-group:nth-child(3) { animation-delay: 0.3s; }
+.add-expense-form .btn-group { animation-delay: 0.4s; }
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animation du titre du formulaire */
+.form-title {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 10px;
+}
+
+.form-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #0d6efd;
+    animation: underline 1s ease forwards;
+}
+
+@keyframes underline {
+    to { width: 100%; }
+}
+
+/* Animation des boutons du formulaire */
+.form-buttons {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease 0.5s forwards;
+}
+
+.form-buttons .btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.form-buttons .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.form-buttons .btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.form-buttons .btn:active {
+    transform: scale(0.95);
+}
+
+.add-expense-form select option {
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.add-expense-form select option:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.add-expense-form textarea {
+    resize: vertical;
+    min-height: 100px;
+    transition: all 0.3s ease;
+}
+
+.add-expense-form textarea:focus {
+    min-height: 150px;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Style des alertes */
+.alert {
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .table-responsive {
+        margin-bottom: 0;
+    }
+}
+
+/* Animation des transitions */
+.btn, .nav-link {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Style du tableau de bord */
+.display-4 {
+    font-weight: 300;
+    line-height: 1.2;
+}
+
+/* Style des formulaires */
+.form-label {
+    font-weight: 500;
+}
+
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}

@@ -1,0 +1,44 @@
+{
+    "avatars": [
+        {
+            "id": 1,
+            "name": "Professionnel",
+            "url": "/static/avatars/avatar1.png"
+        },
+        {
+            "id": 2,
+            "name": "Créatif",
+            "url": "/static/avatars/avatar2.png"
+        },
+        {
+            "id": 3,
+            "name": "Sportif",
+            "url": "/static/avatars/avatar3.png"
+        },
+        {
+            "id": 4,
+            "name": "Élégant",
+            "url": "/static/avatars/avatar4.png"
+        },
+        {
+            "id": 5,
+            "name": "Décontracté",
+            "url": "/static/avatars/avatar5.png"
+        },
+        {
+            "id": 6,
+            "name": "Aventurier",
+            "url": "/static/avatars/avatar6.png"
+        },
+        {
+            "id": 7,
+            "name": "Technologique",
+            "url": "/static/avatars/avatar7.png"
+        },
+        {
+            "id": 8,
+            "name": "Artistique",
+            "url": "/static/avatars/avatar8.png"
+        }
+    ]
+}

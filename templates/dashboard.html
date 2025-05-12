@@ -1,0 +1,566 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="welcome-message mb-4">
+    <h2 class="text-primary">Bienvenue, {{ username }} ! <i class="fas fa-smile"></i></h2>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="mb-4">Aperçu des dépenses</h2>
+                    <div class="d-flex align-items-center gap-3">
+                        <select class="form-select" id="currency-selector" style="width: auto;">
+                            <option value="FCFA" {% if current_user.devise == 'FCFA' %}selected{% endif %}>Franc CFA</option>
+                            <option value="EUR" {% if current_user.devise == 'EUR' %}selected{% endif %}>Euro</option>
+                            <option value="USD" {% if current_user.devise == 'USD' %}selected{% endif %}>Dollar US</option>
+                            <option value="GBP" {% if current_user.devise == 'GBP' %}selected{% endif %}>Livre Sterling</option>
+                        </select>
+                        <h3 class="mb-0">
+                            <span id="montant-total" data-montant-original="{{ total }}">{{ '%.2f'|format(total) }}</span>
+                            <span id="currency-symbol">{{ current_user.devise }}</span>
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Budget mensuel</h5>
+                {% if budget_mensuel > 0 %}
+                    <div class="progress mb-3" style="height: 25px;">
+                        {% set progress_class = 'bg-success' %}
+                        {% if pourcentage_budget > 80 %}
+                            {% set progress_class = 'bg-warning' %}
+                        {% endif %}
+                        {% if pourcentage_budget > 100 %}
+                            {% set progress_class = 'bg-danger' %}
+                        {% endif %}
+                        <div class="progress-bar {{ progress_class }}" 
+                             role="progressbar" 
+                             style="width: {{ min(100, pourcentage_budget) }}%" 
+                             aria-valuenow="{{ pourcentage_budget }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ '%.1f'|format(pourcentage_budget) }}%
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Dépenses mensuelles</span> : <span id="montant-mois" data-montant-original="{{ total_mois }}">{{ '%.2f'|format(total_mois) }}</span> <span class="currency-symbol">{{ current_user.devise }}</span></span>
+                        <span>Budget : <span id="montant-budget" data-montant-original="{{ budget_mensuel }}">{{ '%.2f'|format(budget_mensuel) }}</span> <span class="currency-symbol">{{ current_user.devise }}</span></span>
+                    </div>
+                    {% if pourcentage_budget > 80 and pourcentage_budget <= 100 %}
+                        <div class="alert alert-warning mt-2 mb-0">
+                            <i class="fas fa-exclamation-triangle"></i> Attention : Vous approchez de votre limite budgétaire !
+                        </div>
+                    {% elif pourcentage_budget > 100 %}
+                        <div class="alert alert-danger mt-2 mb-0">
+                            <i class="fas fa-exclamation-circle"></i> Attention : Vous avez dépassé votre budget mensuel !
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle"></i> Vous n'avez pas encore défini de budget mensuel. 
+                        <a href="{{ url_for('profil') }}" class="alert-link">Cliquez ici pour en définir un</a>.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="card-title mb-0">Historique des dépenses</h3>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('ajouter_depense') }}" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Ajouter une dépense">
+                            <i class="fas fa-plus-circle"></i> Ajouter une dépense
+                        </a>
+                        <div class="btn-group">
+                            <a href="{{ url_for('dashboard', sort='date', date_debut=date_debut, date_fin=date_fin, periode=periode) }}" 
+                               class="btn btn-sm {% if sort_by == 'date' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                <i class="fas fa-calendar"></i> Trier par date
+                            </a>
+                            <a href="{{ url_for('dashboard', sort='categorie', date_debut=date_debut, date_fin=date_fin, periode=periode) }}" 
+                               class="btn btn-sm {% if sort_by == 'categorie' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                <i class="fas fa-tags"></i> Trier par catégorie
+                            </a>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{{ url_for('exporter_csv') }}" class="btn btn-sm btn-success" data-bs-toggle="tooltip" title="Exporter en CSV">
+                                <i class="fas fa-file-csv"></i>
+                            </a>
+                            <a href="{{ url_for('exporter_pdf') }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Exporter en PDF">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <form id="filterForm" class="row g-3 align-items-end" method="GET" action="{{ url_for('dashboard') }}">
+                    <div class="col-md-3">
+                        <label for="date_debut" class="form-label">Date de début</label>
+                        <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ date_debut }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="date_fin" class="form-label">Date de fin</label>
+                        <input type="date" class="form-control" id="date_fin" name="date_fin" value="{{ date_fin }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="periode" class="form-label">Période prédéfinie</label>
+                        <select class="form-select" id="periode" name="periode">
+                            <option value="">Période personnalisée</option>
+                            <option value="semaine" {% if periode == 'semaine' %}selected{% endif %}>Cette semaine</option>
+                            <option value="mois" {% if periode == 'mois' %}selected{% endif %}>Ce mois</option>
+                            <option value="annee" {% if periode == 'annee' %}selected{% endif %}>Cette année</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i> Filtrer
+                        </button>
+                    </div>
+                    <input type="hidden" name="sort" value="{{ sort_by }}">
+                </form>
+            </div>
+            <div class="card-body">
+                {% if depenses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Catégorie</th>
+                                    <th>Description</th>
+                                    <th>Montant</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for depense in depenses %}
+                                    <tr>
+                                        <td>{{ depense.date.strftime('%d/%m/%Y') }}</td>
+                                        <td><i class="fas fa-tag"></i> {{ depense.categorie }}</td>
+                                        <td>{{ depense.description }}</td>
+                                        <td class="text-end" data-montant-original="{{ depense.montant }}">{{ "%.2f"|format(depense.montant) }} {{ current_user.devise }}</td>
+                                        <td class="text-center">
+                                            <a href="{{ url_for('modifier_depense', depense_id=depense.id) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button onclick="confirmerSuppression({{ depense.id }})" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-center">Aucune dépense enregistrée.</p>
+                {% endif %}
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    {% if suggestions %}
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h3 class="card-title mb-3">
+                                <i class="fas fa-brain text-primary me-2"></i>Analyse intelligente
+                            </h3>
+                            <div class="suggestions-container">
+                                {% for suggestion in suggestions %}
+                                <div class="suggestion-card mb-3 p-3 border rounded {% if suggestion.type == 'alerte' %}bg-danger-subtle{% elif suggestion.type == 'tendance' %}bg-warning-subtle{% elif suggestion.type == 'budget' %}bg-info-subtle{% else %}bg-success-subtle{% endif %}">
+                                    <div class="d-flex align-items-start">
+                                        <div class="suggestion-icon me-3">
+                                            {% if suggestion.type == 'alerte' %}
+                                            <i class="fas fa-exclamation-triangle fs-4 text-danger"></i>
+                                            {% elif suggestion.type == 'tendance' %}
+                                            <i class="fas fa-chart-line fs-4 text-warning"></i>
+                                            {% elif suggestion.type == 'budget' %}
+                                            <i class="fas fa-piggy-bank fs-4 text-info"></i>
+                                            {% else %}
+                                            <i class="fas fa-lightbulb fs-4 text-success"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="suggestion-content">
+                                            <p class="mb-2 fw-bold">{{ suggestion.message }}</p>
+                                            <p class="mb-0 text-muted"><i class="fas fa-info-circle me-2"></i>{{ suggestion.conseil }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Dépenses par catégorie</h3>
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Activité récente</h3>
+                            <div class="btn-group mb-3">
+                                <button class="btn btn-outline-primary btn-sm" onclick="changerPeriode('semaine')">Par semaine</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="changerPeriode('mois')">Par mois</button>
+                            </div>
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const taux = {
+    'FCFA': 1,
+    'EUR': 655.957,  // 1 EUR = 655.957 FCFA
+    'USD': 600,      // 1 USD = 600 FCFA
+    'GBP': 750       // 1 GBP = 750 FCFA
+};
+
+// Fonction de formatage des nombres
+function formatNumber(number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+// Fonction de conversion de montant
+function convertirMontant(montantFCFA, devise) {
+    // Le montant est toujours en FCFA, on le convertit vers la devise cible
+    const montantConverti = montantFCFA / taux[devise];
+    return Math.round(montantConverti * 100) / 100;
+}
+
+function mettreAJourMontants(deviseCible) {
+    // Mettre à jour le montant total
+    const montantTotal = document.getElementById('montant-total');
+    const montantOriginalTotal = parseFloat(montantTotal.getAttribute('data-montant-original'));
+    montantTotal.textContent = formatNumber(convertirMontant(montantOriginalTotal, deviseCible));
+
+    // Mettre à jour le montant mensuel
+    const montantMois = document.getElementById('montant-mois');
+    const montantOriginalMois = parseFloat(montantMois.getAttribute('data-montant-original'));
+    montantMois.textContent = formatNumber(convertirMontant(montantOriginalMois, deviseCible));
+
+    // Mettre à jour le budget
+    const montantBudget = document.getElementById('montant-budget');
+    const montantOriginalBudget = parseFloat(montantBudget.getAttribute('data-montant-original'));
+    montantBudget.textContent = formatNumber(convertirMontant(montantOriginalBudget, deviseCible));
+
+    // Mettre à jour tous les montants dans le tableau
+    document.querySelectorAll('td[data-montant-original]').forEach(td => {
+        const montantOriginal = parseFloat(td.getAttribute('data-montant-original'));
+        td.textContent = `${formatNumber(convertirMontant(montantOriginal, deviseCible))} ${deviseCible}`;
+    });
+
+    // Mettre à jour tous les symboles de devise
+    document.querySelectorAll('.currency-symbol, #currency-symbol').forEach(span => {
+        span.textContent = deviseCible;
+    });
+}
+
+// Écouter les changements de devise
+document.getElementById('currency-selector').addEventListener('change', function() {
+    const nouvelleDevise = this.value;
+    
+    // Envoyer la nouvelle devise au serveur
+    fetch('/profil', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `devise=${nouvelleDevise}`
+    }).then(response => {
+        if (response.ok) {
+            // Mettre à jour l'affichage des montants
+            mettreAJourMontants(nouvelleDevise);
+        }
+    });
+});
+
+function formatNumber(number) {
+    return new Intl.NumberFormat('fr-FR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(number);
+}
+
+function convertirMontant(montantFCFA, devise) {
+    return montantFCFA / taux[devise];
+}
+
+function updateCurrency() {
+    const selector = document.getElementById('currency-selector');
+    const selectedCurrency = selector.value;
+    
+    // Mise à jour du montant total
+    const montantElement = document.getElementById('montant-total');
+    const montantOriginal = parseFloat(montantElement.getAttribute('data-montant-original'));
+    const montantConverti = convertirMontant(montantOriginal, selectedCurrency);
+    montantElement.textContent = formatNumber(montantConverti);
+    
+    // Mise à jour du symbole de la devise
+    const currencySymbolElement = document.getElementById('currency-symbol');
+    currencySymbolElement.textContent = selectedCurrency;
+    
+    // Mise à jour des montants dans le tableau
+    document.querySelectorAll('td.text-end').forEach(td => {
+        const montantTexte = td.textContent.trim();
+        if (!td.hasAttribute('data-montant-original')) {
+            // Première conversion : sauvegarder le montant original
+            const montantOriginal = parseFloat(montantTexte.replace(/[^\d,.-]/g, '').replace(',', '.'));
+            if (!isNaN(montantOriginal)) {
+                td.setAttribute('data-montant-original', montantOriginal);
+            }
+        }
+        
+        const montantOriginal = parseFloat(td.getAttribute('data-montant-original'));
+        if (!isNaN(montantOriginal)) {
+            const montantConverti = convertirMontant(montantOriginal, selectedCurrency);
+            td.textContent = `${formatNumber(montantConverti)} ${selectedCurrency}`;
+        }
+    });
+}
+
+// Initialisation au chargement de la page
+// Variables globales pour les graphiques
+var donneesCategoriesJSON, donneesTemporellesJSON;
+
+// Initialisation des données
+donneesCategoriesJSON = {{ donnees_categories|tojson|safe }};
+donneesTemporellesJSON = {{ donnees_temporelles|tojson|safe }};
+
+// Gestion du formulaire de filtrage
+document.addEventListener('DOMContentLoaded', function() {
+    const periodeSelect = document.getElementById('periode');
+    const dateDebutInput = document.getElementById('date_debut');
+    const dateFinInput = document.getElementById('date_fin');
+
+    periodeSelect.addEventListener('change', function() {
+        const periode = this.value;
+        if (periode) {
+            dateDebutInput.disabled = true;
+            dateFinInput.disabled = true;
+        } else {
+            dateDebutInput.disabled = false;
+            dateFinInput.disabled = false;
+        }
+    });
+
+    // Désactiver les champs de date si une période est sélectionnée au chargement
+    if (periodeSelect.value) {
+        dateDebutInput.disabled = true;
+        dateFinInput.disabled = true;
+    }
+});
+
+// Configuration des couleurs
+const couleursCategories = [
+    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+    '#FF9F40', '#7FBA00', '#00A4EF', '#F25022', '#7FBA00'
+];
+
+// Création du graphique en camembert
+function creerGraphiqueCamembert() {
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    window.graphiqueCamembert = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(donneesCategoriesJSON),
+            datasets: [{
+                data: Object.values(donneesCategoriesJSON),
+                backgroundColor: couleursCategories.slice(0, Object.keys(donneesCategoriesJSON).length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right'
+                },
+                title: {
+                    display: true,
+                    text: 'Répartition des dépenses par catégorie'
+                }
+            }
+        }
+    });
+}
+
+// Variables pour le graphique temporel
+let periodeActuelle = 'mois';
+let graphiqueTemporel = null;
+
+// Création du graphique temporel
+function creerGraphiqueTemporel(periode) {
+    const ctx = document.getElementById('lineChart').getContext('2d');
+    const donnees = donneesTemporellesJSON[periode];
+    
+    if (graphiqueTemporel) {
+        graphiqueTemporel.destroy();
+    }
+    
+    graphiqueTemporel = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: donnees.labels,
+            datasets: [{
+                label: 'Total des dépenses',
+                data: donnees.montants,
+                borderColor: '#36A2EB',
+                tension: 0.1,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return formatNumber(value) + ' ' + document.getElementById('currency-selector').value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Évolution des dépenses par ' + periode
+                }
+            }
+        }
+    });
+}
+
+// Fonction pour changer la période du graphique temporel
+function changerPeriode(periode) {
+    periodeActuelle = periode;
+    creerGraphiqueTemporel(periode);
+    
+    // Mise à jour des boutons
+    document.querySelectorAll('.btn-group .btn').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-primary');
+    });
+    event.target.classList.remove('btn-outline-primary');
+    event.target.classList.add('btn-primary');
+}
+
+// Mise à jour des graphiques lors du changement de devise
+function updateCurrency() {
+    const selector = document.getElementById('currency-selector');
+    const selectedCurrency = selector.value;
+    
+    // Mise à jour du montant total
+    const montantElement = document.getElementById('montant-total');
+    const montantOriginal = parseFloat(montantElement.getAttribute('data-montant-original'));
+    const montantConverti = convertirMontant(montantOriginal, selectedCurrency);
+    montantElement.textContent = formatNumber(montantConverti);
+    
+    // Mise à jour de tous les symboles de devise
+    document.querySelectorAll('#currency-symbol, .currency-symbol').forEach(symbol => {
+        symbol.textContent = selectedCurrency;
+    });
+    
+    // Mise à jour des montants dans le tableau
+    document.querySelectorAll('td.text-end').forEach(td => {
+        const montantOriginal = parseFloat(td.getAttribute('data-montant-original'));
+        if (!isNaN(montantOriginal)) {
+            const montantConverti = convertirMontant(montantOriginal, selectedCurrency);
+            td.textContent = `${formatNumber(montantConverti)} ${selectedCurrency}`;
+        }
+    });
+    
+    // Mise à jour du budget mensuel
+    const montantMoisElement = document.getElementById('montant-mois');
+    const montantBudgetElement = document.getElementById('montant-budget');
+    
+    if (montantMoisElement && montantBudgetElement) {
+        const montantMoisOriginal = parseFloat(montantMoisElement.getAttribute('data-montant-original'));
+        const montantBudgetOriginal = parseFloat(montantBudgetElement.getAttribute('data-montant-original'));
+        
+        if (!isNaN(montantMoisOriginal)) {
+            montantMoisElement.textContent = formatNumber(convertirMontant(montantMoisOriginal, selectedCurrency));
+        }
+        if (!isNaN(montantBudgetOriginal)) {
+            montantBudgetElement.textContent = formatNumber(convertirMontant(montantBudgetOriginal, selectedCurrency));
+        }
+    }
+    
+    // Mise à jour des graphiques
+    if (graphiqueTemporel) {
+        const donneesConverties = {
+            labels: donneesTemporellesJSON[periodeActuelle].labels,
+            montants: donneesTemporellesJSON[periodeActuelle].montants.map(m => convertirMontant(m, selectedCurrency))
+        };
+        
+        graphiqueTemporel.data.datasets[0].data = donneesConverties.montants;
+        graphiqueTemporel.options.scales.y.ticks.callback = function(value) {
+            return formatNumber(value) + ' ' + selectedCurrency;
+        };
+        graphiqueTemporel.update();
+    }
+
+    // Mise à jour du graphique en camembert
+    if (window.graphiqueCamembert) {
+        const donneesConverties = Object.entries(donneesCategoriesJSON).reduce(function(acc, entry) {
+            var cat = entry[0];
+            var montant = entry[1];
+            acc[cat] = convertirMontant(montant, selectedCurrency);
+            return acc;
+        }, {});
+        
+        window.graphiqueCamembert.data.datasets[0].data = Object.values(donneesConverties);
+        window.graphiqueCamembert.update();
+    }
+}
+
+// Initialisation au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser tous les tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    const selector = document.getElementById('currency-selector');
+    if (selector) {
+        // Stocker les montants originaux pour tous les éléments du tableau
+        document.querySelectorAll('td.text-end').forEach(td => {
+            const montantTexte = td.textContent.trim();
+            const montantOriginal = parseFloat(montantTexte.replace(/[^\d,.-]/g, '').replace(',', '.'));
+            if (!isNaN(montantOriginal)) {
+                td.setAttribute('data-montant-original', montantOriginal);
+            }
+        });
+        
+        selector.addEventListener('change', updateCurrency);
+    }
+    
+    // Initialisation des graphiques
+    creerGraphiqueCamembert();
+    creerGraphiqueTemporel('mois');
+});
+</script>
+{% endblock %}
