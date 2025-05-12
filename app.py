@@ -21,7 +21,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'votre_clef_secrete'
 # Configuration MySQL avec les paramètres par défaut de XAMPP
 # Configuration de la base de données
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'mysql://root:@localhost/suis_tes_depenses')
+database_url = os.environ.get('DATABASE_URL', 'mysql://root:@localhost/suis_tes_depenses')
+if database_url.startswith('mysql://'):
+    database_url = database_url.replace('mysql://', 'mysql+pymysql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
